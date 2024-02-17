@@ -1,6 +1,8 @@
 from fastapi import FastAPI, HTTPException
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, helpers
 from config import es_config, Document
+from typing import List
+import uuid
 
 app = FastAPI()
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
@@ -17,13 +19,25 @@ async def index_settings():
 
 ###
 # * Method for posting documents to elasticsearch
-# TODO - Add bulk upload 
 ###
-@app.post("/mydocuments/")
-def add_document(doc: Document):
+@app.post("/bulk-upload/")
+async def add_document(documents: List[Document]):
+  docs = [
+    {
+      "_index": "mydocuments",
+      # Moving id generation to the client side for bulk upload
+      "_id": str(uuid.uuid4()),
+      "_source": {
+        "title": doc.title,
+        "content": doc.content
+      }
+    }
+    for doc in documents
+  ]
+  
   try:
-    response = es.index(index="mydocuments", body=doc.dict())
-    return {"document_id": response["_id"]}
+    successes, errors = helpers.bulk(es, docs, raise_on_error=False)
+    return {"doc_ids": [doc["_id"] for doc in docs], "successes": successes, "errors": errors}
   except Exception as e:
     raise HTTPException(status_code=400, detail=str(e)) 
  

@@ -45,7 +45,7 @@ async def add_document(documents: List[Document]):
 ###
 # * Method for retreiving document content from elasticsearch 
 ###
-@app.get("/mycoduments/{document_id}")
+@app.get("/mydocuments/{document_id}")
 def get_document(document_id: str):
   try:
     response = es.get(index="mydocuments", id=document_id)

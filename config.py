@@ -1,3 +1,12 @@
+from pydantic import BaseModel
+
+# Shcema for the document
+# TODO - Add more fields (e.g. date, author, etc.)
+class Document(BaseModel):
+  title: str
+  content: str
+
+# Configuration file for elasticsearch
 es_config = {
   "settings": {
     "analysis": {

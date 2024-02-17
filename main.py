@@ -1,14 +1,10 @@
 from fastapi import FastAPI, HTTPException
 from elasticsearch import Elasticsearch
-from pydantic import BaseModel
-from config import es_config
+from config import es_config, Document
 
 app = FastAPI()
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
 
-@app.get("/")
-def read_root():
-  return {"Hello": "World"}
 
 @app.put("/mydocuments/")
 async def index_settings(): 
@@ -17,11 +13,6 @@ async def index_settings():
     return {"acknowledged": response["acknowledged"], "index": response["index"]}
   except Exception as e:
     raise HTTPException(status_code=400, detail=str(e))
-
-
-class Document(BaseModel):
-  title: str
-  content: str
 
 
 ###

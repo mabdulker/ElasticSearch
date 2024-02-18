@@ -1,11 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from elasticsearch import Elasticsearch, helpers
 from config import es_config, Document
+import os
 from typing import List
 import uuid
+import openai
+from openai import OpenAI
 
 app = FastAPI()
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+client = OpenAI(
+  api_key= os.getenv('OPENAI_API_KEY')
+)
 
 
 @app.put("/mydocuments/")
@@ -19,6 +25,7 @@ async def index_settings():
 
 ###
 # * Method for posting documents to elasticsearch
+# TODO - add convenient way to upload from computer e.g. text file folder
 ###
 @app.post("/bulk-upload/")
 async def add_document(documents: List[Document]):
@@ -45,7 +52,7 @@ async def add_document(documents: List[Document]):
 # * Method for retreiving document content from elasticsearch 
 ###
 @app.get("/mydocuments/{document_id}")
-def get_document(document_id: str):
+async def get_document(document_id: str):
   try:
     response = es.get(index="mydocuments", id=document_id)
     return response["_source"]
@@ -56,7 +63,7 @@ def get_document(document_id: str):
 ###
 # * Method for searching documents in elasticsearch
 ###
-@app.get("/mydocuments/")
+@app.get("/search/")
 def search_documents(query: str):
   try:
     response = es.search(
@@ -72,8 +79,42 @@ def search_documents(query: str):
         }
       )
     if response["hits"]["total"]["value"] == 0:
-      return {"No document relevant to your query found."}
+      return { False: "No document relevant to your query found."}
     hit_ids = [hit['_id'] for hit in response["hits"]["hits"]]
-    return hit_ids
+    return { True : hit_ids }
   except Exception as e:
     raise HTTPException(status_code=400, detail=str(e))
+
+
+###
+# * LLM powered reply 
+###
+@app.get("/llm_search/")
+async def llm_search(query: str):
+    documents = search_documents(query)
+    # Checking if relevant documents exist
+    if True in documents:
+      content = []
+      for doc_id in documents[True]:
+        doc = await get_document(doc_id)
+        content.append(str(doc))
+    else:
+      return documents[False]
+    
+    content = '\n'.join(content)
+    prompt = f"{content}\n\n{query}\n\nAnswer:"
+    
+    try:
+      response = client.chat.completions.create(
+        model = "gpt-3.5-turbo",
+        messages = [
+          {"role": "system", "content": "You are an assistant that gives concise responses based on the content that you're given only"},
+          {"role": "user", "content": prompt}
+        ]
+      )
+      answer = response.choices[0].text.strip()
+      return {"answer": answer, "documents": documents}
+    except Exception as e:
+      raise HTTPException(status_code=500, detail=str(e))
+
+    

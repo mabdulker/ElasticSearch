@@ -34,7 +34,6 @@ async def add_document(documents: List[Document]):
     }
     for doc in documents
   ]
-  
   try:
     successes, errors = helpers.bulk(es, docs, raise_on_error=False)
     return {"doc_ids": [doc["_id"] for doc in docs], "successes": successes, "errors": errors}
@@ -64,8 +63,9 @@ def search_documents(query: str):
       index="mydocuments", 
       body={
         "query": {
-          "match": {
-            "content": query
+          "multi_match": {
+            "query": query,
+            "fields": ['title^2', 'content']
             }
           },
         "size": 3

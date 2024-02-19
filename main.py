@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from elasticsearch import Elasticsearch, helpers
 from config import es_config, Document
+from dotenv import load_dotenv
 import os
 from typing import List
 import uuid
@@ -9,6 +10,7 @@ from openai import OpenAI
 
 app = FastAPI()
 es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+load_dotenv()
 client = OpenAI(
   api_key= os.getenv('OPENAI_API_KEY')
 )
@@ -106,13 +108,14 @@ async def llm_search(query: str):
     
     try:
       response = client.chat.completions.create(
+      # response = openai.chat.completions.create(
         model = "gpt-3.5-turbo",
         messages = [
           {"role": "system", "content": "You are an assistant that gives concise responses based on the content that you're given only"},
           {"role": "user", "content": prompt}
         ]
       )
-      answer = response.choices[0].text.strip()
+      answer = response.choices[0].message.content
       return {"answer": answer, "documents": documents}
     except Exception as e:
       raise HTTPException(status_code=500, detail=str(e))

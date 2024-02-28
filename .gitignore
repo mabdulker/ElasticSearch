@@ -6,6 +6,9 @@ __pycache__/
 # C extensions
 *.so
 
+# Zed config
+pyrightconfig.json
+
 # Distribution / packaging
 .Python
 build/

@@ -1,0 +1,12 @@
+name: elastic-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.12
+  - pydantic
+  - fastapi
+  - uvicorn
+  - elasticsearch
+  - openai
+  - python-dotenv

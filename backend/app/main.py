@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from elasticsearch import Elasticsearch, helpers
-from config import es_config, Document
+from app.config import es_config, Document
 from dotenv import load_dotenv
 import os
 from typing import List
@@ -9,12 +9,15 @@ import openai
 from openai import OpenAI
 
 app = FastAPI()
-es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+es = Elasticsearch([{'host': 'localhost', 'port': 9200, "scheme":"http"}])
 load_dotenv()
 client = OpenAI(
   api_key= os.getenv('OPENAI_API_KEY')
 )
 
+@app.get("/")
+def read_root():
+  return {"message": "Welcome to MyDocuments API"}
 
 @app.put("/mydocuments/")
 async def index_settings(): 

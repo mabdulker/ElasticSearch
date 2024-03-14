@@ -32,3 +32,7 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     command: uvicorn app.main:app --host 0.0.0.0 --reload
+
+volumes:
+  myvolume:
+    name: esdata

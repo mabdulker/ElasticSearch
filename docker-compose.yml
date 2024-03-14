@@ -27,6 +27,7 @@ services:
     # mounting the .env file to the container
     volumes:
       - ./.env:/code/.env
+      - ./backend/app:/code/app
     ports:
       - "8000:8000"
     environment:

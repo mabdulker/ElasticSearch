@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 import os
 from typing import List
 import uuid
-import openai
 from openai import OpenAI
 
 app = FastAPI()
@@ -66,7 +65,9 @@ async def get_document(document_id: str):
         response = es.get(index="mydocuments", id=document_id)
         return response["_source"]
     except Exception as e:
-        raise HTTPException(status_code=404, detail="Document not found")
+        raise HTTPException(
+            status_code=404, detail=f"Document not found ({e})"
+        )
 
 
 ###
@@ -120,7 +121,8 @@ async def llm_search(query: str):
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an assistant that gives concise responses based on the content that you're given only",
+                    "content": "You are an assistant that gives concise \
+                      responses based on the content that you're given only",
                 },
                 {"role": "user", "content": prompt},
             ],

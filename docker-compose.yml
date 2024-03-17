@@ -14,25 +14,27 @@ services:
         source: myvolume
         target: /usr/share/elasticsearch/data
 
-  kibana:
-    image: "docker.elastic.co/kibana/kibana:7.13.0"
-    container_name: kibana
-    ports:
-      - "5601:5601"
-    depends_on:
-      - elasticsearch
+  # DEBUG
+  # kibana:
+  #   image: "docker.elastic.co/kibana/kibana:7.13.0"
+  #   container_name: kibana
+  #   ports:
+  #     - "5601:5601"
+  #   depends_on:
+  #     - elasticsearch
   
   backend:
     build: ./backend
+    container_name: backend
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
     # mounting the .env file to the container
     volumes:
       - ./.env:/code/.env
       - ./backend/app:/code/app
-    ports:
-      - "8000:8000"
-    environment:
-      - PYTHONUNBUFFERED=1
-    command: uvicorn app.main:app --host 0.0.0.0 --reload
+    command: poetry run uvicorn app.main:app --host 0.0.0.0 --reload
 
 volumes:
   myvolume:

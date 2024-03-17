@@ -1,14 +1,14 @@
-# Use an official Python runtime as the base image
-FROM continuumio/miniconda3:4.10.3 
+FROM python:3.10-slim
 
-# Set the working directory in the container
 WORKDIR /code
 
+COPY poetry.lock /code/poetry.lock
+COPY pyproject.toml /code/pyproject.toml
+
+RUN \
+    pip install poetry && \
+    poetry install --no-root
+
 # COPY ./app /code/app
-# COPY ./environment.yml /code/environment.yml
 
-# Install any needed packages specified in environment.yml
-RUN conda env update -n base --file /code/environment.yml
-
-# # Make port 8000 available to the world outside this container
-# EXPOSE 8000rn", "app.main:app", "--host", "0.0.0.0", "--reload"]
+# CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--reload"]

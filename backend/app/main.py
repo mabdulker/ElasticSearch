@@ -74,7 +74,7 @@ async def get_document(document_id: str):
 # * Method for searching documents in elasticsearch
 ###
 @app.get("/search/")
-def search_documents(query: str):
+def query_document(query: str):
     try:
         response = es.search(
             index="mydocuments",
@@ -101,7 +101,7 @@ def search_documents(query: str):
 ###
 @app.get("/llm_search/")
 async def llm_search(query: str):
-    documents = search_documents(query)
+    documents = query_document(query)
     # Checking if relevant documents exist
     if True in documents:
         content = []
